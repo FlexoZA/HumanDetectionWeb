@@ -26,22 +26,23 @@ const emit = defineEmits(['submit'])
 const email = ref('')
 
 // Validation state
-const emailTouched = ref(false)
+const showValidation = ref(false)
 
 // Computed validation errors
 const emailError = computed(() => {
-  if (!emailTouched.value) return ''
+  if (!showValidation.value && !email.value) return ''
   if (!email.value.trim()) return 'Email is required'
   return validateEmail(email.value)
 })
 
-const markEmailTouched = () => {
-  emailTouched.value = true
-}
+const handleSubmit = (event) => {
+  // Prevent default form submission
+  if (event) {
+    event.preventDefault()
+  }
 
-const handleSubmit = () => {
-  // Mark email field as touched to show validation errors
-  emailTouched.value = true
+  // Show validation errors
+  showValidation.value = true
 
   // Check if there are any validation errors
   if (emailError.value) {
@@ -100,7 +101,6 @@ const handleSubmit = () => {
               :disabled="loading"
               autocomplete="email"
               required
-              @blur="markEmailTouched"
               :class="[
                 'block w-full rounded-md pl-10 pr-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed',
                 emailError
@@ -114,8 +114,9 @@ const handleSubmit = () => {
         </div>
 
         <button
-          type="submit"
+          type="button"
           :disabled="loading"
+          @click="handleSubmit"
           class="w-full inline-flex justify-center items-center rounded-md bg-blue-600 px-4 py-2.5 text-white font-medium hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
         >
           <span v-if="loading" class="flex items-center">

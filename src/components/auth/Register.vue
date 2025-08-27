@@ -33,29 +33,26 @@ const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 
 // Validation state
-const nameTouched = ref(false)
-const emailTouched = ref(false)
-const passwordTouched = ref(false)
-const confirmPasswordTouched = ref(false)
+const showValidation = ref(false)
 
 // Computed validation errors
 const nameError = computed(() => {
-  if (!nameTouched.value) return ''
+  if (!showValidation.value && !name.value) return ''
   if (!name.value.trim()) return 'Full name is required'
   return ''
 })
 const emailError = computed(() => {
-  if (!emailTouched.value) return ''
+  if (!showValidation.value && !email.value) return ''
   if (!email.value.trim()) return 'Email is required'
   return validateEmail(email.value)
 })
 const passwordError = computed(() => {
-  if (!passwordTouched.value) return ''
+  if (!showValidation.value && !password.value) return ''
   if (!password.value) return 'Password is required'
   return validatePassword(password.value)
 })
 const confirmPasswordError = computed(() => {
-  if (!confirmPasswordTouched.value) return ''
+  if (!showValidation.value && !confirmPassword.value) return ''
   if (!confirmPassword.value) return 'Please confirm your password'
   if (password.value && confirmPassword.value && password.value !== confirmPassword.value) {
     return 'Passwords do not match'
@@ -71,28 +68,14 @@ const toggleConfirmPasswordVisibility = () => {
   showConfirmPassword.value = !showConfirmPassword.value
 }
 
-const markNameTouched = () => {
-  nameTouched.value = true
-}
+const handleSubmit = (event) => {
+  // Prevent default form submission
+  if (event) {
+    event.preventDefault()
+  }
 
-const markEmailTouched = () => {
-  emailTouched.value = true
-}
-
-const markPasswordTouched = () => {
-  passwordTouched.value = true
-}
-
-const markConfirmPasswordTouched = () => {
-  confirmPasswordTouched.value = true
-}
-
-const handleSubmit = () => {
-  // Mark all fields as touched to show validation errors
-  nameTouched.value = true
-  emailTouched.value = true
-  passwordTouched.value = true
-  confirmPasswordTouched.value = true
+  // Show validation errors
+  showValidation.value = true
 
   // Check if there are any validation errors
   if (nameError.value || emailError.value || passwordError.value || confirmPasswordError.value) {
@@ -148,7 +131,6 @@ const handleSubmit = () => {
               :disabled="loading"
               autocomplete="name"
               required
-              @blur="markNameTouched"
               :class="[
                 'block w-full rounded-md pl-10 pr-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed',
                 nameError
@@ -176,7 +158,6 @@ const handleSubmit = () => {
               :disabled="loading"
               autocomplete="email"
               required
-              @blur="markEmailTouched"
               :class="[
                 'block w-full rounded-md pl-10 pr-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed',
                 emailError
@@ -204,7 +185,6 @@ const handleSubmit = () => {
               :disabled="loading"
               autocomplete="new-password"
               required
-              @blur="markPasswordTouched"
               :class="[
                 'block w-full rounded-md pl-10 pr-10 py-2 text-gray-900 placeholder-gray-400 focus:outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed',
                 passwordError
@@ -243,7 +223,6 @@ const handleSubmit = () => {
               :disabled="loading"
               autocomplete="new-password"
               required
-              @blur="markConfirmPasswordTouched"
               :class="[
                 'block w-full rounded-md pl-10 pr-10 py-2 text-gray-900 placeholder-gray-400 focus:outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed',
                 confirmPasswordError
@@ -268,8 +247,9 @@ const handleSubmit = () => {
         </div>
 
         <button
-          type="submit"
+          type="button"
           :disabled="loading"
+          @click="handleSubmit"
           class="w-full inline-flex justify-center items-center rounded-md bg-blue-600 px-4 py-2.5 text-white font-medium hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
         >
           <span v-if="loading" class="flex items-center">
