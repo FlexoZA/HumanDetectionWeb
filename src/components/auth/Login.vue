@@ -181,11 +181,21 @@ const handleSubmit = (event) => {
           </span>
           <span v-else>Sign in</span>
         </button>
+        <div class="text-center mt-4">
+          <router-link
+            to="/forgot-password"
+            class="text-sm font-medium text-blue-600 hover:text-blue-700"
+          >
+            Forgot your password?
+          </router-link>
+        </div>
       </form>
 
       <p class="mt-6 text-center text-sm text-gray-600">
         Don't have an account?
-        <a href="#" class="font-medium text-blue-600 hover:text-blue-700">Create one</a>
+        <router-link to="/register" class="font-medium text-blue-600 hover:text-blue-700">
+          Create one
+        </router-link>
       </p>
     </div>
   </div>

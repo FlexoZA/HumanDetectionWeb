@@ -149,7 +149,9 @@ const handleSubmit = (event) => {
       <div class="mt-6 text-center">
         <p class="text-sm text-gray-600">
           Remember your password?
-          <a href="#" class="font-medium text-blue-600 hover:text-blue-700">Back to sign in</a>
+          <router-link to="/login" class="font-medium text-blue-600 hover:text-blue-700">
+            Back to sign in
+          </router-link>
         </p>
       </div>
     </div>

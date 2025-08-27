@@ -281,7 +281,9 @@ const handleSubmit = (event) => {
 
       <p class="mt-6 text-center text-sm text-gray-600">
         Already have an account?
-        <a href="#" class="font-medium text-blue-600 hover:text-blue-700">Sign in</a>
+        <router-link to="/login" class="font-medium text-blue-600 hover:text-blue-700">
+          Sign in
+        </router-link>
       </p>
     </div>
   </div>
