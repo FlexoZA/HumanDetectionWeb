@@ -33,11 +33,25 @@ A Progressive Web Application for human detection built with Vue 3, Tailwind CSS
    cp .env.example .env
    ```
 
-4. Update `.env` with your Supabase credentials:
+4. Create `.env` file and configure your Supabase credentials:
+
+   ```bash
+   cp env-config.txt .env
+   ```
+
+   Then update `.env` with your actual Supabase credentials:
+
    ```
    VITE_SUPABASE_URL=your-supabase-project-url
    VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+
+   # Schema is configured in supabase.js (human_detection by default)
    ```
+
+5. **Set up schema permissions** (if using custom schema):
+   - Run the SQL commands in `schema_permissions.sql` in your Supabase SQL editor
+   - This grants necessary permissions for authenticated users to access the device schema
+   - **Note:** Authentication tables remain in the default `public` schema
 
 ### Development
 
@@ -129,26 +143,3 @@ authStore.signIn(credentials.email, credentials.password) }
 <!-- Presentational Component -->
 defineProps({ loading: Boolean, error: String }) const emit = defineEmits(['submit'])
 ```
-
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## PWA Features
-
-This application is configured as a Progressive Web App with:
-
-- Service Worker for offline functionality
-- Web App Manifest for installation
-- Auto-update capabilities
-
-## Contributing
-
-1. Follow the existing code style
-2. Use Prettier for code formatting
-3. Ensure PWA functionality works correctly
-4. Test with real-time data scenarios
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).

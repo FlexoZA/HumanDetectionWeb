@@ -28,6 +28,18 @@ const router = createRouter({
       component: () => import('@/views/auth/ForgotPassView.vue'),
       meta: { requiresAuth: false },
     },
+    {
+      path: '/devices',
+      name: 'devices',
+      component: () => import('@/views/device/DeviceListView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/devices/:id',
+      name: 'device-detail',
+      component: () => import('@/views/device/DeviceView.vue'),
+      meta: { requiresAuth: true },
+    },
   ],
 })
 
