@@ -8,6 +8,8 @@ export const useDeviceStore = defineStore('device', () => {
   const currentDevice = ref(null)
   const loading = ref(false)
   const error = ref(null)
+  const armingDevice = ref(false)
+  const disarmingDevice = ref(false)
 
   const authStore = useAuthStore()
 
@@ -191,14 +193,88 @@ export const useDeviceStore = defineStore('device', () => {
     error.value = null
   }
 
+  // Arm device - send webhook request
+  const armDevice = async (deviceId) => {
+    try {
+      armingDevice.value = true
+      console.log('DEBUG::deviceStore', `Arming device ${deviceId}`)
+
+      const response = await fetch(
+        'https://labsn8n.cwe.cloud/webhook/a96506aa-1c74-472a-b6f8-c5525495f3cf',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            device_id: deviceId,
+            action: 'arm',
+          }),
+        },
+      )
+
+      if (!response.ok) {
+        throw new Error(`Webhook request failed: ${response.status}`)
+      }
+
+      console.log('DEBUG::deviceStore', `Successfully armed device ${deviceId}`)
+      return { success: true, error: null }
+    } catch (err) {
+      console.error('DEBUG::deviceStore', `Error arming device ${deviceId}:`, err.message)
+      error.value = `Failed to arm device: ${err.message}`
+      return { success: false, error: err }
+    } finally {
+      armingDevice.value = false
+    }
+  }
+
+  // Disarm device - send webhook request
+  const disarmDevice = async (deviceId) => {
+    try {
+      disarmingDevice.value = true
+      console.log('DEBUG::deviceStore', `Disarming device ${deviceId}`)
+
+      const response = await fetch(
+        'https://labsn8n.cwe.cloud/webhook/a96506aa-1c74-472a-b6f8-c5525495f3cf',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            device_id: deviceId,
+            action: 'disarm',
+          }),
+        },
+      )
+
+      if (!response.ok) {
+        throw new Error(`Webhook request failed: ${response.status}`)
+      }
+
+      console.log('DEBUG::deviceStore', `Successfully disarmed device ${deviceId}`)
+      return { success: true, error: null }
+    } catch (err) {
+      console.error('DEBUG::deviceStore', `Error disarming device ${deviceId}:`, err.message)
+      error.value = `Failed to disarm device: ${err.message}`
+      return { success: false, error: err }
+    } finally {
+      disarmingDevice.value = false
+    }
+  }
+
   return {
     devices,
     currentDevice,
     loading,
     error,
+    armingDevice,
+    disarmingDevice,
     fetchDevices,
     fetchDevice,
     clearCurrentDevice,
     clearError,
+    armDevice,
+    disarmDevice,
   }
 })

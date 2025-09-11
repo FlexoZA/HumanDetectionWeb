@@ -11,9 +11,10 @@ import {
   CogIcon,
 } from '@heroicons/vue/24/outline'
 import { CheckCircleIcon, XCircleIcon, ArrowPathIcon } from '@heroicons/vue/24/solid'
+import { useDeviceStore } from '@/stores/device/deviceStore'
 
 // Props from parent
-defineProps({
+const props = defineProps({
   device: {
     type: Object,
     default: null,
@@ -37,18 +38,37 @@ const emit = defineEmits([
   'configure-device',
 ])
 
+// Device store
+const deviceStore = useDeviceStore()
+
 // Handle refresh
 const handleRefresh = () => {
   emit('refresh')
 }
 
 // Handle arm/disarm
-const handleArmDevice = () => {
-  emit('arm-device')
+const handleArmDevice = async () => {
+  if (!props.device?.device_id) {
+    console.error('DEBUG::Device.vue', 'No device ID available')
+    return
+  }
+
+  const result = await deviceStore.armDevice(props.device.device_id)
+  if (result.success) {
+    emit('arm-device')
+  }
 }
 
-const handleDisarmDevice = () => {
-  emit('disarm-device')
+const handleDisarmDevice = async () => {
+  if (!props.device?.device_id) {
+    console.error('DEBUG::Device.vue', 'No device ID available')
+    return
+  }
+
+  const result = await deviceStore.disarmDevice(props.device.device_id)
+  if (result.success) {
+    emit('disarm-device')
+  }
 }
 
 // Handle notifications toggle
@@ -111,6 +131,17 @@ const getEventTypeColor = (eventType) => {
 <template>
   <div class="space-y-6">
     <!-- Header -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+      <div class="flex items-center justify-between">
+        <h1 class="text-xl font-semibold text-gray-900">
+          {{ props.device?.unit_friendly_name || `Device ${props.device?.device_id}` }}
+        </h1>
+        <div class="text-sm text-gray-900">
+          {{ props.device.events?.[0]?.current_mode || 'Unknown' }}
+        </div>
+      </div>
+    </div>
+
     <div class="flex items-center justify-between">
       <div class="flex items-center space-x-3">
         <button
@@ -133,35 +164,29 @@ const getEventTypeColor = (eventType) => {
           </svg>
           Back
         </button>
-        <div>
-          <h1 class="text-xl font-semibold text-gray-900">
-            {{ device?.unit_friendly_name || `Device ${device?.device_id}` }}
-          </h1>
-          <p class="text-sm text-gray-600">ESP32 Human Detection Device</p>
-        </div>
       </div>
       <button
         @click="handleRefresh"
-        :disabled="loading"
+        :disabled="props.loading"
         class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <ArrowPathIcon :class="loading ? 'animate-spin' : ''" class="w-4 h-4 mr-2" />
+        <ArrowPathIcon :class="props.loading ? 'animate-spin' : ''" class="w-4 h-4 mr-2" />
         Refresh
       </button>
     </div>
 
     <!-- Error Message -->
-    <div v-if="error" class="p-4 rounded-md bg-red-50 border border-red-200">
+    <div v-if="props.error" class="p-4 rounded-md bg-red-50 border border-red-200">
       <div class="flex">
         <ExclamationTriangleIcon class="h-5 w-5 text-red-400" />
         <div class="ml-3">
-          <p class="text-sm text-red-700">{{ error }}</p>
+          <p class="text-sm text-red-700">{{ props.error }}</p>
         </div>
       </div>
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading && !device" class="space-y-4">
+    <div v-if="props.loading && !props.device" class="space-y-4">
       <div class="animate-pulse">
         <div class="bg-white rounded-lg border border-gray-200 p-6">
           <div class="space-y-4">
@@ -175,7 +200,7 @@ const getEventTypeColor = (eventType) => {
     </div>
 
     <!-- Device Details -->
-    <div v-else-if="device" class="space-y-6">
+    <div v-else-if="props.device" class="space-y-6">
       <!-- Status Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Connection Status -->
@@ -183,7 +208,7 @@ const getEventTypeColor = (eventType) => {
           <div class="flex items-center">
             <div class="flex-shrink-0">
               <CheckCircleIcon
-                v-if="device.online_status === 'online'"
+                v-if="props.device.online_status === 'online'"
                 class="h-8 w-8 text-green-600"
               />
               <XCircleIcon v-else class="h-8 w-8 text-red-600" />
@@ -191,7 +216,7 @@ const getEventTypeColor = (eventType) => {
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-900">Status</h3>
               <p class="text-lg font-semibold text-gray-700 capitalize">
-                {{ device.online_status }}
+                {{ props.device.online_status }}
               </p>
             </div>
           </div>
@@ -206,7 +231,7 @@ const getEventTypeColor = (eventType) => {
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-900">WiFi Signal</h3>
               <p class="text-lg font-semibold text-gray-700">
-                {{ getWifiSignalStrength(device.heartbeat?.device_wifi_signal) }}
+                {{ getWifiSignalStrength(props.device.heartbeat?.device_wifi_signal) }}
               </p>
             </div>
           </div>
@@ -221,7 +246,7 @@ const getEventTypeColor = (eventType) => {
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-900">Uptime</h3>
               <p class="text-lg font-semibold text-gray-700">
-                {{ formatUptime(device.heartbeat?.device_uptime_ms) }}
+                {{ formatUptime(props.device.heartbeat?.device_uptime_ms) }}
               </p>
             </div>
           </div>
@@ -236,40 +261,11 @@ const getEventTypeColor = (eventType) => {
             <div class="ml-4">
               <h3 class="text-sm font-medium text-gray-900">Last Seen</h3>
               <p class="text-sm font-semibold text-gray-700">
-                {{ formatTimestamp(device.last_seen) }}
+                {{ formatTimestamp(props.device.last_seen) }}
               </p>
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Device Information -->
-      <div class="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 class="text-lg font-medium text-gray-900 mb-4">Device Information</h2>
-        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
-          <div>
-            <dt class="text-sm font-medium text-gray-500">Device ID</dt>
-            <dd class="mt-1 text-sm text-gray-900">{{ device.device_id }}</dd>
-          </div>
-          <div>
-            <dt class="text-sm font-medium text-gray-500">Friendly Name</dt>
-            <dd class="mt-1 text-sm text-gray-900">
-              {{ device.unit_friendly_name || 'Not set' }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-sm font-medium text-gray-500">Created</dt>
-            <dd class="mt-1 text-sm text-gray-900">
-              {{ formatTimestamp(device.created_at) }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-sm font-medium text-gray-500">Current Mode</dt>
-            <dd class="mt-1 text-sm text-gray-900">
-              {{ device.events?.[0]?.current_mode || 'Unknown' }}
-            </dd>
-          </div>
-        </dl>
       </div>
 
       <!-- Control Panel -->
@@ -280,10 +276,12 @@ const getEventTypeColor = (eventType) => {
           <div class="text-center">
             <button
               @click="handleArmDevice"
-              class="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+              :disabled="deviceStore.armingDevice"
+              class="w-full inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ShieldCheckIcon class="w-5 h-5 mr-2" />
-              Arm Device
+              <ArrowPathIcon v-if="deviceStore.armingDevice" class="animate-spin w-5 h-5 mr-2" />
+              <ShieldCheckIcon v-else class="w-5 h-5 mr-2" />
+              {{ deviceStore.armingDevice ? 'Arming...' : 'Arm Device' }}
             </button>
             <p class="mt-2 text-xs text-gray-500">Enable detection and alerts</p>
           </div>
@@ -291,10 +289,12 @@ const getEventTypeColor = (eventType) => {
           <div class="text-center">
             <button
               @click="handleDisarmDevice"
-              class="w-full inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              :disabled="deviceStore.disarmingDevice"
+              class="w-full inline-flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ShieldExclamationIcon class="w-5 h-5 mr-2" />
-              Disarm Device
+              <ArrowPathIcon v-if="deviceStore.disarmingDevice" class="animate-spin w-5 h-5 mr-2" />
+              <ShieldExclamationIcon v-else class="w-5 h-5 mr-2" />
+              {{ deviceStore.disarmingDevice ? 'Disarming...' : 'Disarm Device' }}
             </button>
             <p class="mt-2 text-xs text-gray-500">Disable detection</p>
           </div>
@@ -314,10 +314,42 @@ const getEventTypeColor = (eventType) => {
         </div>
       </div>
 
+      <!-- Device Information -->
+      <div class="bg-white rounded-lg border border-gray-200 p-6">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">Device Information</h2>
+        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Device ID</dt>
+            <dd class="mt-1 text-sm text-gray-900">{{ props.device.device_id }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Friendly Name</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              {{ props.device.unit_friendly_name || 'Not set' }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Created</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              {{ formatTimestamp(props.device.created_at) }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Current Mode</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              {{ props.device.events?.[0]?.current_mode || 'Unknown' }}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
       <!-- Recent Events -->
       <div class="bg-white rounded-lg border border-gray-200 p-6">
         <h2 class="text-lg font-medium text-gray-900 mb-4">Recent Events</h2>
-        <div v-if="!device.events || device.events.length === 0" class="text-center py-8">
+        <div
+          v-if="!props.device.events || props.device.events.length === 0"
+          class="text-center py-8"
+        >
           <ExclamationTriangleIcon class="mx-auto h-12 w-12 text-gray-400" />
           <h3 class="mt-2 text-sm font-medium text-gray-900">No recent events</h3>
           <p class="mt-1 text-sm text-gray-500">
@@ -326,7 +358,7 @@ const getEventTypeColor = (eventType) => {
         </div>
         <div v-else class="space-y-3">
           <div
-            v-for="event in device.events.slice(0, 10)"
+            v-for="event in props.device.events.slice(0, 10)"
             :key="event.id"
             class="flex items-center justify-between p-3 rounded-lg border"
             :class="getEventTypeColor(event.event_type)"
