@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth/authStore'
 import HeaderView from '@/views/header/HeaderView.vue'
+import Breadcrumb from '@/components/Breadcrumb.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -27,6 +28,11 @@ const showHeader = computed(() => {
   <div class="min-h-screen bg-gray-50">
     <!-- Header for authenticated routes -->
     <HeaderView v-if="showHeader" />
+
+    <!-- Breadcrumbs - always visible -->
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <Breadcrumb />
+    </div>
 
     <!-- Main content -->
     <RouterView />
