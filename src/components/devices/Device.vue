@@ -137,7 +137,7 @@ const getEventTypeColor = (eventType) => {
           {{ props.device?.unit_friendly_name || `Device ${props.device?.device_id}` }}
         </h1>
         <div class="text-sm text-gray-900">
-          {{ props.device.events?.[0]?.current_mode || 'Unknown' }}
+          {{ props.device?.events?.[0]?.current_mode || 'Unknown' }}
         </div>
       </div>
     </div>
@@ -347,7 +347,7 @@ const getEventTypeColor = (eventType) => {
       <div class="bg-white rounded-lg border border-gray-200 p-6">
         <h2 class="text-lg font-medium text-gray-900 mb-4">Recent Events</h2>
         <div
-          v-if="!props.device.events || props.device.events.length === 0"
+          v-if="!props.device?.events || props.device?.events.length === 0"
           class="text-center py-8"
         >
           <ExclamationTriangleIcon class="mx-auto h-12 w-12 text-gray-400" />
@@ -358,7 +358,7 @@ const getEventTypeColor = (eventType) => {
         </div>
         <div v-else class="space-y-3">
           <div
-            v-for="event in props.device.events.slice(0, 10)"
+            v-for="event in (props.device?.events || []).slice(0, 10)"
             :key="event.id"
             class="flex items-center justify-between p-3 rounded-lg border"
             :class="getEventTypeColor(event.event_type)"
