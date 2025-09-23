@@ -40,6 +40,12 @@ const router = createRouter({
       component: () => import('@/views/device/DeviceView.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/devices/:id/settings',
+      name: 'device-settings',
+      component: () => import('@/views/device/DeviceSettingsView.vue'),
+      meta: { requiresAuth: true },
+    },
   ],
 })
 

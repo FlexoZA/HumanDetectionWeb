@@ -11,6 +11,7 @@ const routeLabels = {
   home: 'Dashboard',
   devices: 'Devices',
   'device-detail': 'Device Details',
+  'device-settings': 'Device Settings',
   login: 'Login',
   register: 'Register',
   'forgot-password': 'Forgot Password',
@@ -41,7 +42,7 @@ const breadcrumbs = computed(() => {
   })
 
   // Add intermediate breadcrumbs based on route
-  if (route.name === 'devices' || route.name === 'device-detail') {
+  if (route.name === 'devices' || route.name === 'device-detail' || route.name === 'device-settings') {
     crumbs.push({
       name: 'devices',
       label: routeLabels.devices,
@@ -50,11 +51,21 @@ const breadcrumbs = computed(() => {
     })
   }
 
-  // Add device detail if on device detail page
-  if (route.name === 'device-detail') {
+  // Add device detail if on device detail or settings page
+  if (route.name === 'device-detail' || route.name === 'device-settings') {
     crumbs.push({
       name: 'device-detail',
       label: routeLabels['device-detail'],
+      path: `/devices/${route.params.id}`,
+      isLast: route.name === 'device-detail',
+    })
+  }
+
+  // Add settings as last if on settings page
+  if (route.name === 'device-settings') {
+    crumbs.push({
+      name: 'device-settings',
+      label: routeLabels['device-settings'],
       path: route.path,
       isLast: true,
     })

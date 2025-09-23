@@ -124,7 +124,10 @@ export const useDeviceStore = defineStore('device', () => {
           device_id,
           unit_friendly_name,
           created_at,
-          client_id
+          client_id,
+          config_version,
+          auto_arm_delay_ms,
+          auto_arm_enable
         `,
         )
         .eq('client_id', clientData.id)
@@ -191,6 +194,54 @@ export const useDeviceStore = defineStore('device', () => {
   // Clear error
   const clearError = () => {
     error.value = null
+  }
+
+  // Update device settings via webhook (N8N will update Supabase)
+  const updateDeviceSettings = async (deviceId, { auto_arm_enable, auto_arm_delay_ms }) => {
+    try {
+      loading.value = true
+      error.value = null
+
+      const response = await fetch(
+        'https://labsn8n.cwe.cloud/webhook/57b4093c-c97c-4d02-80c0-78d1c44a22ed',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            device_id: deviceId,
+            action: 'update_settings',
+            auto_arm_enable,
+            auto_arm_delay_ms,
+            config_version: currentDevice.value?.config_version,
+          }),
+        },
+      )
+
+      if (!response.ok) {
+        throw new Error(`Webhook request failed: ${response.status}`)
+      }
+
+      // Optionally refresh current device (N8N updates Supabase)
+      if (currentDevice.value?.device_id === deviceId) {
+        await fetchDevice(deviceId)
+      }
+
+      console.log('DEBUG::deviceStore', 'Settings update webhook succeeded', {
+        deviceId,
+        auto_arm_enable,
+        auto_arm_delay_ms,
+      })
+
+      return { success: true, error: null }
+    } catch (err) {
+      console.error('DEBUG::deviceStore', 'Error updating device settings:', err.message)
+      error.value = err.message
+      return { success: false, error: err }
+    } finally {
+      loading.value = false
+    }
   }
 
   // Arm device - send webhook request
@@ -274,6 +325,7 @@ export const useDeviceStore = defineStore('device', () => {
     fetchDevice,
     clearCurrentDevice,
     clearError,
+    updateDeviceSettings,
     armDevice,
     disarmDevice,
   }

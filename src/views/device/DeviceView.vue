@@ -83,7 +83,7 @@ const handleToggleNotifications = () => {
 
 const handleConfigureDevice = () => {
   console.log('DEBUG::DeviceView', 'Configure device requested', deviceId)
-  // TODO: Implement device configuration (future feature)
+  router.push({ name: 'device-settings', params: { id: deviceId } })
 }
 </script>
 
